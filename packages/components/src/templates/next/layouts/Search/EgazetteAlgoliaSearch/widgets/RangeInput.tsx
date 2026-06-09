@@ -1,0 +1,132 @@
+import { useState } from "react"
+import { useRange } from "react-instantsearch"
+
+interface RangeInputProps {
+  attribute: string
+  minLabel: string
+  maxLabel: string
+  /** Inclusive lower bound each value must satisfy. */
+  bound?: { min?: number; max?: number }
+}
+
+const toInputValue = (value: number | undefined) =>
+  value === undefined || !Number.isFinite(value) ? "" : String(value)
+
+const validate = (
+  minNum: number | undefined,
+  maxNum: number | undefined,
+  bound: { min?: number; max?: number } | undefined,
+): string | undefined => {
+  const checkBound = (value: number | undefined, label: string) => {
+    if (value === undefined) return undefined
+    if (bound?.min !== undefined && value < bound.min)
+      return `${label} must be ${bound.min} or later`
+    if (bound?.max !== undefined && value > bound.max)
+      return `${label} must be ${bound.max} or earlier`
+    return undefined
+  }
+
+  return (
+    checkBound(minNum, "From") ??
+    checkBound(maxNum, "To") ??
+    (minNum !== undefined && maxNum !== undefined && minNum > maxNum
+      ? `"From" cannot be later than "To"`
+      : undefined)
+  )
+}
+
+export const RangeInput = ({
+  attribute,
+  minLabel,
+  maxLabel,
+  bound,
+}: RangeInputProps) => {
+  // Passing explicit bounds lets the range connector refine via numericFilters
+  // even when the attribute has no facet stats (e.g. publishMonth, which is
+  // filterable but not in the index's attributesForFaceting). It also clamps
+  // refinements to [min, max] at the connector level.
+  const { start, range, refine, canRefine } = useRange({
+    attribute,
+    min: bound?.min,
+    max: bound?.max,
+  })
+  const [minRaw] = start
+  const [, maxRaw] = start
+
+  const [min, setMin] = useState(toInputValue(minRaw))
+  const [max, setMax] = useState(toInputValue(maxRaw))
+  const [error, setError] = useState<string>()
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const minNum = min === "" ? undefined : Number(min)
+    const maxNum = max === "" ? undefined : Number(max)
+    const validationError = validate(minNum, maxNum, bound)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+    setError(undefined)
+    refine([minNum, maxNum])
+  }
+
+  const inputClassName =
+    "h-10 w-full rounded border bg-white px-2 " +
+    (error ? "border-utility-feedback-alert" : "border-base-content-strong")
+
+  return (
+    <form onSubmit={onSubmit} className="flex flex-col gap-1">
+      <div className="flex items-end gap-2">
+        <label className="flex flex-1 flex-col gap-1">
+          <span className="prose-body-sm text-base-content">{minLabel}</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={bound?.min}
+            max={bound?.max}
+            placeholder={
+              range.min !== undefined ? String(range.min) : undefined
+            }
+            value={min}
+            onChange={(event) => setMin(event.target.value)}
+            disabled={!canRefine}
+            aria-invalid={error !== undefined}
+            className={inputClassName}
+          />
+        </label>
+        <label className="flex flex-1 flex-col gap-1">
+          <span className="prose-body-sm text-base-content">{maxLabel}</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={bound?.min}
+            max={bound?.max}
+            placeholder={
+              range.max !== undefined ? String(range.max) : undefined
+            }
+            value={max}
+            onChange={(event) => setMax(event.target.value)}
+            disabled={!canRefine}
+            aria-invalid={error !== undefined}
+            className={inputClassName}
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={!canRefine}
+          className="prose-headline-base-medium h-10 rounded border border-base-content-strong bg-white px-3 text-base-content disabled:opacity-50"
+        >
+          Go
+        </button>
+      </div>
+      {error ? (
+        <span
+          role="alert"
+          className="prose-body-sm text-utility-feedback-alert"
+        >
+          {error}
+        </span>
+      ) : null}
+    </form>
+  )
+}
