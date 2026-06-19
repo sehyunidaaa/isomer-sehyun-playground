@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRange } from "react-instantsearch"
 
 interface RangeInputProps {
@@ -50,17 +50,33 @@ export const RangeInput = ({
     min: bound?.min,
     max: bound?.max,
   })
-  const [minRaw] = start
-  const [, maxRaw] = start
+  const [minRaw, maxRaw] = start
 
   const [min, setMin] = useState(toInputValue(minRaw))
   const [max, setMax] = useState(toInputValue(maxRaw))
   const [error, setError] = useState<string>()
 
+  // Keep the inputs in sync when the active refinement changes outside of this
+  // form (URL hydration on deep-links, "Clear refinements", browser back/forward).
+  // Without this the inputs would show stale values that no longer match the
+  // applied filters. `minRaw`/`maxRaw` are stable primitives, so the effect only
+  // fires when the refinement actually changes.
+  useEffect(() => {
+    setMin(toInputValue(minRaw))
+    setMax(toInputValue(maxRaw))
+  }, [minRaw, maxRaw])
+
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const minNum = min === "" ? undefined : Number(min)
     const maxNum = max === "" ? undefined : Number(max)
+    if (
+      (minNum !== undefined && Number.isNaN(minNum)) ||
+      (maxNum !== undefined && Number.isNaN(maxNum))
+    ) {
+      setError("Please enter a valid number")
+      return
+    }
     const validationError = validate(minNum, maxNum, bound)
     if (validationError) {
       setError(validationError)
