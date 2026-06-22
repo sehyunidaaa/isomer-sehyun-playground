@@ -64,6 +64,9 @@ export const RangeInput = ({
   useEffect(() => {
     setMin(toInputValue(minRaw))
     setMax(toInputValue(maxRaw))
+    // An external refinement change (e.g. "Clear refinements") makes any prior
+    // validation error stale, so reset it alongside the inputs.
+    setError(undefined)
   }, [minRaw, maxRaw])
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {

@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { BiX } from "react-icons/bi"
 import { useCurrentRefinements } from "react-instantsearch"
 
@@ -10,15 +11,19 @@ export const CurrentRefinements = () => {
     excludedAttributes: ["query", "publishYear", "publishMonth"],
   })
 
-  if (items.length === 0) return null
-
-  const labelLookup = new Map<string, string>()
-  EGAZETTE_CATEGORIES.forEach((category) => {
-    labelLookup.set(category.value, category.displayLabel)
-    category.subCategories?.forEach((sub) => {
-      labelLookup.set(sub.value, sub.displayLabel)
+  // Built once from a static constant rather than on every render.
+  const labelLookup = useMemo(() => {
+    const lookup = new Map<string, string>()
+    EGAZETTE_CATEGORIES.forEach((category) => {
+      lookup.set(category.value, category.displayLabel)
+      category.subCategories?.forEach((sub) => {
+        lookup.set(sub.value, sub.displayLabel)
+      })
     })
-  })
+    return lookup
+  }, [])
+
+  if (items.length === 0) return null
 
   return (
     <ul className="flex flex-wrap gap-2">
