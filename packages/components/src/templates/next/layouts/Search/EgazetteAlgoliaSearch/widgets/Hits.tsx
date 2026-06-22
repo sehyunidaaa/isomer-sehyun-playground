@@ -1,5 +1,6 @@
 import { BiFile } from "react-icons/bi"
 import { Highlight, Snippet, useHits } from "react-instantsearch"
+import { getFormattedDate } from "~/utils/getFormattedDate"
 
 interface EgazetteHit {
   fileUrl: string
@@ -13,7 +14,7 @@ interface EgazetteHit {
 
 const formatDate = (timestamp: number) => {
   if (!Number.isFinite(timestamp)) return ""
-  return new Date(timestamp).toLocaleDateString("en-SG")
+  return getFormattedDate(new Date(timestamp).toISOString())
 }
 
 export const Hits = () => {
