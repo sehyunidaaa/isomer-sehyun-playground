@@ -23,7 +23,6 @@ interface EgazetteAlgoliaSearchClientProps {
 
 // The earliest year for which gazettes are available in the index.
 const EARLIEST_GAZETTE_YEAR = 2002
-const currentYear = new Date().getFullYear()
 
 const SectionHeading = ({ children }: { children: React.ReactNode }) => (
   <h3 className="prose-headline-base-semibold text-base-content">{children}</h3>
@@ -34,6 +33,10 @@ const Divider = () => <hr className="border-t border-base-divider-medium" />
 export const EgazetteAlgoliaSearch = ({
   config,
 }: EgazetteAlgoliaSearchClientProps) => {
+  // Computed per render so the upper bound stays correct even if the bundle is
+  // cached across a year boundary.
+  const currentYear = new Date().getFullYear()
+
   const searchClient = useMemo(
     () => algoliasearch(config.appId, config.searchApiKey),
     [config.appId, config.searchApiKey],

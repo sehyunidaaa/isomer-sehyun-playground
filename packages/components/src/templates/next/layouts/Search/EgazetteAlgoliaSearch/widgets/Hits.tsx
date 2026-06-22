@@ -24,7 +24,7 @@ export const Hits = () => {
   return (
     <ul className="flex flex-col divide-y divide-base-divider-medium">
       {items.map((hit) => (
-        <li key={hit.objectID} className="flex flex-col gap-2 py-[1.25rem]">
+        <li key={hit.objectID} className="flex flex-col gap-2 py-5">
           <h5 className="prose-headline-lg-semibold text-base-content-strong">
             <a
               href={hit.fileUrl}
