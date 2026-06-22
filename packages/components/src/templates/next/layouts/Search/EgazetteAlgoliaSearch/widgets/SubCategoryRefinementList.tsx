@@ -57,7 +57,7 @@ export const SubCategoryRefinementList = () => {
         return (
           <Checkbox
             key={row.value}
-            className="w-fit"
+            className="w-fit cursor-pointer"
             value={row.value}
             isDisabled={isDisabled}
             onChange={() => refine(row.value)}

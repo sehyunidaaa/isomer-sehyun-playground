@@ -1,5 +1,6 @@
 import { BiFile } from "react-icons/bi"
 import { Highlight, Snippet, useHits } from "react-instantsearch"
+import { Link } from "~/templates/next/components/internal/Link"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 interface EgazetteHit {
@@ -27,11 +28,9 @@ export const Hits = () => {
       {items.map((hit) => (
         <li key={hit.objectID} className="flex flex-col gap-2 py-5">
           <h5 className="prose-headline-lg-semibold text-base-content-strong">
-            <a
+            <Link
               href={hit.fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              type="application/pdf"
+              isExternal
               className="flex items-start gap-2 text-link hover:text-link-hover"
             >
               <BiFile
@@ -41,7 +40,7 @@ export const Hits = () => {
               <span className="underline underline-offset-2">
                 <Highlight attribute="title" hit={hit} />
               </span>
-            </a>
+            </Link>
           </h5>
           <div className="flex flex-col gap-2 pl-8">
             <p className="prose-body-base text-base-content">

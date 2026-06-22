@@ -38,7 +38,7 @@ export const CategoryRefinementList = () => {
       {rows.map((row) => (
         <Checkbox
           key={row.value}
-          className="w-fit"
+          className="w-fit cursor-pointer"
           value={row.value}
           onChange={() => refine(row.value)}
         >
